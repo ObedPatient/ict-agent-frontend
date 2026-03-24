@@ -5,8 +5,5 @@
   "scripts": {
     "dev": "serve .",
     "build": "echo 'No build step needed'"
-  },
-  "dependencies": {
-    "serve": "^14.0.0"
   }
 }
