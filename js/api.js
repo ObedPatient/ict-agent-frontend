@@ -1,12 +1,7 @@
-// api.js - Shared API configuration and functions
-
-// Configuration
 const getApiBaseUrl = () => {
-    // In production (Vercel), use the environment variable
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return window.BACKEND_URL || 'https://your-backend.onrender.com';
+        return window.BACKEND_URL || 'https://ict-agent-backend.onrender.com';
     }
-    // In development, use localhost
     return 'http://localhost:8000';
 };
 
