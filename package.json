@@ -4,6 +4,6 @@
   "description": "ICT Agent Frontend - Smart Money Analysis",
   "scripts": {
     "dev": "serve .",
-    "build": "echo 'No build step needed'"
+    "build": "echo 'Building static site...' && exit 0"
   }
 }

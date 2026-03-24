@@ -2,34 +2,30 @@
   "version": 2,
   "builds": [
     {
-      "src": "analyzer/*.html",
+      "src": "*.html",
       "use": "@vercel/static"
     },
     {
-      "src": "css/*",
+      "src": "css/**/*",
       "use": "@vercel/static"
     },
     {
-      "src": "js/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "static/**",
+      "src": "js/**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/",
-      "dest": "/analyzer/index.html"
+      "dest": "/index.html"
     },
     {
       "src": "/history",
-      "dest": "/analyzer/history.html"
+      "dest": "/history.html"
     },
     {
       "src": "/analysis",
-      "dest": "/analyzer/detail.html"
+      "dest": "/analysis.html"
     },
     {
       "src": "/css/(.*)",
@@ -38,10 +34,6 @@
     {
       "src": "/js/(.*)",
       "dest": "/js/$1"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
     }
   ]
 }
