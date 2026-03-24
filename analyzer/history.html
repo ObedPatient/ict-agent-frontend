@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis History — ICT Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['Space Mono', 'monospace'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        bull: '#00d4aa',
+                        bear: '#ff4757',
+                        wait: '#ffa502',
+                        accent: '#58a6ff',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Top ticker bar -->
+    <div class="border-b border-terminal-border overflow-hidden" style="background:#0d1117;">
+        <div class="flex items-center py-1.5 overflow-hidden">
+            <span class="font-mono text-xs text-gray-500 px-4 shrink-0 border-r border-terminal-border mr-4">LIVE</span>
+            <div class="ticker-inner flex gap-8 whitespace-nowrap font-mono text-xs">
+                <span class="text-gray-400">EUR/USD <span class="text-bull">+0.12%</span></span>
+                <span class="text-gray-400">GBP/USD <span class="text-bear">-0.08%</span></span>
+                <span class="text-gray-400">XAU/USD <span class="text-bull">+0.45%</span></span>
+                <span class="text-gray-400">BTC/USD <span class="text-bull">+1.23%</span></span>
+                <span class="text-gray-400">GBP/JPY <span class="text-bear">-0.19%</span></span>
+                <span class="text-gray-400">NAS100 <span class="text-bull">+0.67%</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="border-b border-terminal-border sticky top-0 z-50" style="background:rgba(10,12,15,0.95);backdrop-filter:blur(10px);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded flex items-center justify-center" style="background:rgba(88,166,255,0.15);border:1px solid rgba(88,166,255,0.3);">
+                    <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <span class="font-mono text-sm font-bold text-white tracking-wider">ICT<span class="text-accent">AGENT</span></span>
+            </a>
+            <div class="flex items-center gap-1">
+                <a href="/" class="px-3 py-1.5 rounded text-sm text-gray-400 hover:text-white hover:bg-terminal-card transition-colors">Analyze</a>
+                <a href="/history.html" class="px-3 py-1.5 rounded text-sm text-white bg-terminal-card transition-colors">History</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
+                        <span class="font-mono text-xs text-gray-500 uppercase tracking-widest">Trade Journal</span>
+                    </div>
+                    <h1 class="text-2xl font-semibold text-white">Analysis History</h1>
+                </div>
+                <a href="/" class="px-4 py-2 text-sm rounded-lg font-mono transition-all" style="background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.3);color:#58a6ff;">
+                    + New Analysis
+                </a>
+            </div>
+
+            <!-- Stats will be loaded here -->
+            <div id="statsContainer" class="grid grid-cols-3 gap-3">
+                <div class="rounded-xl border border-terminal-border p-4 text-center" style="background:#111318;">
+                    <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Table will be loaded here -->
+            <div id="tableContainer" class="rounded-xl border border-terminal-border overflow-hidden" style="background:#111318;">
+                <div class="text-center py-8 text-gray-500">Loading analyses...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-terminal-border mt-16 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <span class="font-mono text-xs text-gray-600">ICT AGENT v1.0 — Smart Money Analysis</span>
+            <span class="text-xs text-gray-700">For educational purposes only. Not financial advice.</span>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function loadHistory() {
+            try {
+                const data = await window.api.getHistory();
+                
+                // Update stats
+                const statsContainer = document.getElementById('statsContainer');
+                statsContainer.innerHTML = `
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Total Analyses</p>
+                        <p class="font-mono text-2xl font-bold text-white">${data.analyses.length}</p>
+                    </div>
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Trade Setups</p>
+                        <p class="font-mono text-2xl font-bold text-bull">${data.trade_count}</p>
+                    </div>
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">No Trade Days</p>
+                        <p class="font-mono text-2xl font-bold text-bear">${data.no_trade_count}</p>
+                    </div>
+                `;
+                
+                // Update table
+                const tableContainer = document.getElementById('tableContainer');
+                if (data.analyses && data.analyses.length > 0) {
+                    tableContainer.innerHTML = `
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-terminal-border">
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider">Chart</th>
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider">Pair / TF</th>
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider">Signal</th>
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider">Bias</th>
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider hidden md:table-cell">Entry</th>
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider hidden md:table-cell">R:R</th>
+                                    <th class="text-left px-4 py-3 font-mono text-xs text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-4 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-terminal-border">
+                                ${data.analyses.map(a => `
+                                    <tr class="hover:bg-terminal-muted transition-colors cursor-pointer" onclick="window.location='/analysis.html?id=${a.id}'">
+                                        <td class="px-4 py-3">
+                                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-terminal-border">
+                                                <img src="${a.chart_image_url || '/static/placeholder.png'}" class="w-full h-full object-cover" alt="chart"/>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <p class="font-mono text-sm font-bold text-white">${a.pair || 'Unknown'}</p>
+                                            <p class="text-xs text-gray-600">${a.timeframe || ''}</p>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            ${a.signal ? `
+                                            <span class="text-xs font-mono px-2 py-1 rounded-md ${a.signal === 'TRADE' ? 'signal-trade' : a.signal === 'WAIT' ? 'signal-wait' : 'signal-no'}">
+                                                ${a.signal}
+                                            </span>
+                                            ` : '<span class="text-xs text-gray-600">—</span>'}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            ${a.bias ? `
+                                            <span class="font-mono text-xs ${a.bias === 'BULLISH' ? 'bias-bull' : a.bias === 'BEARISH' ? 'bias-bear' : 'bias-neutral'}">
+                                                ${a.bias === 'BULLISH' ? '▲' : a.bias === 'BEARISH' ? '▼' : '◆'} ${a.bias}
+                                            </span>
+                                            ` : '—'}
+                                        </td>
+                                        <td class="px-4 py-3 hidden md:table-cell">
+                                            <span class="font-mono text-xs text-gray-400">${a.entry_price || '—'}</span>
+                                        </td>
+                                        <td class="px-4 py-3 hidden md:table-cell">
+                                            <span class="font-mono text-xs text-gray-400">${a.rr_ratio || '—'}</span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="text-xs text-gray-600">${new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <a href="/analysis.html?id=${a.id}" class="text-xs text-gray-600 hover:text-accent transition-colors font-mono">View →</a>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    tableContainer.innerHTML = `
+                        <div class="p-16 text-center" style="background:#111318;">
+                            <svg class="w-10 h-10 text-gray-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p class="text-gray-500 mb-4">No analyses yet</p>
+                            <a href="/" class="font-mono text-sm text-accent">Start your first analysis →</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('tableContainer').innerHTML = `
+                    <div class="p-8 text-center text-red-500">
+                        Error loading analyses. Please make sure the backend is running.
+                    </div>
+                `;
+            }
+        }
+        
+        // Load history on page load
+        loadHistory();
+    </script>
+</body>
+</html>

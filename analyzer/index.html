@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICT Agent — Chart Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['Space Mono', 'monospace'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        bull: '#00d4aa',
+                        bear: '#ff4757',
+                        wait: '#ffa502',
+                        accent: '#58a6ff',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Top ticker bar -->
+    <div class="border-b border-terminal-border overflow-hidden" style="background:#0d1117;">
+        <div class="flex items-center py-1.5 overflow-hidden">
+            <span class="font-mono text-xs text-gray-500 px-4 shrink-0 border-r border-terminal-border mr-4">LIVE</span>
+            <div class="ticker-inner flex gap-8 whitespace-nowrap font-mono text-xs">
+                <span class="text-gray-400">EUR/USD <span class="text-bull">+0.12%</span></span>
+                <span class="text-gray-400">GBP/USD <span class="text-bear">-0.08%</span></span>
+                <span class="text-gray-400">XAU/USD <span class="text-bull">+0.45%</span></span>
+                <span class="text-gray-400">BTC/USD <span class="text-bull">+1.23%</span></span>
+                <span class="text-gray-400">GBP/JPY <span class="text-bear">-0.19%</span></span>
+                <span class="text-gray-400">NAS100 <span class="text-bull">+0.67%</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="border-b border-terminal-border sticky top-0 z-50" style="background:rgba(10,12,15,0.95);backdrop-filter:blur(10px);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded flex items-center justify-center" style="background:rgba(88,166,255,0.15);border:1px solid rgba(88,166,255,0.3);">
+                    <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <span class="font-mono text-sm font-bold text-white tracking-wider">ICT<span class="text-accent">AGENT</span></span>
+            </a>
+            <div class="flex items-center gap-1">
+                <a href="/" class="px-3 py-1.5 rounded text-sm text-white bg-terminal-card transition-colors">Analyze</a>
+                <a href="/history.html" class="px-3 py-1.5 rounded text-sm text-gray-400 hover:text-white hover:bg-terminal-card transition-colors">History</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <!-- LEFT: Upload Form -->
+            <div class="lg:col-span-2 space-y-4">
+                <!-- Header -->
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-bull animate-pulse"></div>
+                        <span class="font-mono text-xs text-gray-500 uppercase tracking-widest">Smart Money Analyst</span>
+                    </div>
+                    <h1 class="text-2xl font-semibold text-white">Chart Analysis</h1>
+                    <p class="text-sm text-gray-500 mt-1">Upload a chart — pair, timeframe & session auto-detected</p>
+                </div>
+
+                <!-- Live Session Card -->
+                <div id="sessionCard" class="rounded-xl p-4 border border-terminal-border" style="background:#111318;">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <div id="sessionIndicator" class="w-1.5 h-1.5 rounded-full animate-pulse bg-wait"></div>
+                                <span class="font-mono text-xs text-gray-500 uppercase tracking-wider">Live Session</span>
+                            </div>
+                            <p id="sessionName" class="font-mono text-sm font-bold text-wait">Loading...</p>
+                            <p id="sessionDescription" class="text-xs text-gray-500 mt-1"></p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="font-mono text-xs text-gray-600">NY TIME</p>
+                            <p id="nyTime" class="font-mono text-sm text-white">--:--</p>
+                            <div id="sessionBadge"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="analysisForm" enctype="multipart/form-data" class="space-y-4">
+                    <!-- Image upload -->
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <label class="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-3">
+                            Chart Image
+                            <span class="text-gray-700 ml-2 normal-case">— pair & timeframe auto-detected</span>
+                        </label>
+                        <div id="uploadZone" class="upload-zone rounded-lg p-6 text-center cursor-pointer relative overflow-hidden"
+                             onclick="document.getElementById('id_chart_image').click()">
+                            <div id="uploadPlaceholder">
+                                <svg class="w-8 h-8 text-gray-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="text-sm text-gray-500">Drop chart here or <span class="text-accent">browse</span></p>
+                                <p class="text-xs text-gray-600 mt-1">PNG · JPG · WEBP</p>
+                            </div>
+                            <img id="previewImg" class="hidden max-h-48 mx-auto rounded" alt="preview"/>
+                            <input type="file" id="id_chart_image" name="chart_image" accept="image/*" class="hidden" required/>
+                        </div>
+                        <p id="fileName" class="text-xs text-gray-600 mt-2 font-mono"></p>
+                        <div id="autoDetectBadges" class="hidden flex gap-2 mt-3">
+                            <span class="text-xs px-2 py-1 rounded-md font-mono" style="background:rgba(88,166,255,0.1);color:#58a6ff;border:1px solid rgba(88,166,255,0.2);">
+                                ⟳ Pair: auto-detect
+                            </span>
+                            <span class="text-xs px-2 py-1 rounded-md font-mono" style="background:rgba(88,166,255,0.1);color:#58a6ff;border:1px solid rgba(88,166,255,0.2);">
+                                ⟳ Timeframe: auto-detect
+                            </span>
+                            <span id="sessionBadgeText" class="text-xs px-2 py-1 rounded-md font-mono" style="background:rgba(0,212,170,0.1);color:#00d4aa;border:1px solid rgba(0,212,170,0.2);">
+                                ✓ Session: Loading...
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Risk -->
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <label class="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">Risk per Trade (%)</label>
+                        <div class="flex items-center gap-3">
+                            <input type="number" name="risk_percent" value="1.0" min="0.5" max="5" step="0.5" id="riskInput"
+                                class="w-28 bg-terminal-bg border border-terminal-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent focus:outline-none font-mono"/>
+                            <div class="flex gap-1">
+                                <button type="button" onclick="setRisk('0.5')" class="px-2 py-1 text-xs font-mono rounded border border-terminal-border text-gray-500 hover:text-white hover:border-gray-500 transition-colors">0.5%</button>
+                                <button type="button" onclick="setRisk('1.0')" class="px-2 py-1 text-xs font-mono rounded border border-terminal-border text-gray-500 hover:text-white hover:border-gray-500 transition-colors">1.0%</button>
+                                <button type="button" onclick="setRisk('1.5')" class="px-2 py-1 text-xs font-mono rounded border border-terminal-border text-gray-500 hover:text-white hover:border-gray-500 transition-colors">1.5%</button>
+                                <button type="button" onclick="setRisk('2.0')" class="px-2 py-1 text-xs font-mono rounded border border-terminal-border text-gray-500 hover:text-white hover:border-gray-500 transition-colors">2.0%</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <label class="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
+                            Trader Notes <span class="text-gray-700">(optional)</span>
+                        </label>
+                        <textarea name="notes" rows="2" id="notesInput"
+                            placeholder="E.g. high impact news at 2:30 PM, waiting for NY open, saw liquidity grab on 5M..."
+                            class="w-full bg-terminal-bg border border-terminal-border rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-accent focus:outline-none resize-none placeholder-gray-700"></textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" id="submitBtn"
+                        class="w-full py-3 rounded-xl font-mono text-sm font-bold tracking-wider transition-all"
+                        style="background:rgba(88,166,255,0.15);border:1px solid rgba(88,166,255,0.4);color:#58a6ff;">
+                        <span id="btnText">▶ ANALYZE CHART</span>
+                        <span id="btnLoader" class="hidden">
+                            <span class="inline-block w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin mr-2"></span>
+                            ANALYZING...
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- How it works -->
+                <div class="rounded-xl border border-terminal-border p-5" style="background:#111318;">
+                    <h2 class="font-mono text-xs text-gray-500 uppercase tracking-widest mb-4">How The Agent Thinks</h2>
+                    <div id="stepsContainer" class="space-y-3">
+                        <div class="text-center text-gray-500">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- ICT Concepts -->
+                <div class="rounded-xl border border-terminal-border p-5" style="background:#111318;">
+                    <h2 class="font-mono text-xs text-gray-500 uppercase tracking-widest mb-4">ICT Concepts Analyzed</h2>
+                    <div id="conceptsContainer" class="grid grid-cols-2 gap-2">
+                        <div class="text-center text-gray-500 col-span-2">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Recent Analyses -->
+                <div id="recentAnalysesContainer">
+                    <h2 class="font-mono text-xs text-gray-500 uppercase tracking-widest mb-3">Recent Analyses</h2>
+                    <div id="analysesList" class="space-y-2">
+                        <div class="text-center text-gray-500">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-terminal-border mt-16 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <span class="font-mono text-xs text-gray-600">ICT AGENT v1.0 — Smart Money Analysis</span>
+            <span class="text-xs text-gray-700">For educational purposes only. Not financial advice.</span>
+        </div>
+    </footer>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 z-50 hidden flex-col items-center justify-center" style="background:rgba(10,12,15,0.95);">
+        <div class="text-center space-y-6">
+            <div class="relative w-32 h-32 mx-auto">
+                <div class="w-32 h-32 border border-terminal-border rounded-xl overflow-hidden relative" style="background:#111318;">
+                    <div class="absolute inset-0 scan-line"></div>
+                    <div class="absolute inset-0 grid-bg opacity-30"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-accent opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <p class="font-mono text-sm text-accent" id="loadingText">Reading chart symbol & timeframe...</p>
+                <p class="text-xs text-gray-600 mt-1">ICT analysis in progress</p>
+            </div>
+            <div class="flex gap-1 justify-center">
+                <div class="w-1 h-1 rounded-full bg-accent animate-bounce" style="animation-delay:0ms"></div>
+                <div class="w-1 h-1 rounded-full bg-accent animate-bounce" style="animation-delay:150ms"></div>
+                <div class="w-1 h-1 rounded-full bg-accent animate-bounce" style="animation-delay:300ms"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // DOM Elements
+        const fileInput = document.getElementById("id_chart_image");
+        const uploadZone = document.getElementById("uploadZone");
+        const previewImg = document.getElementById("previewImg");
+        const uploadPlaceholder = document.getElementById("uploadPlaceholder");
+        const fileName = document.getElementById("fileName");
+        const autoDetectBadges = document.getElementById("autoDetectBadges");
+
+        // File upload handlers
+        fileInput.addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileName.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                previewImg.src = ev.target.result;
+                previewImg.classList.remove("hidden");
+                uploadPlaceholder.classList.add("hidden");
+                autoDetectBadges.classList.remove("hidden");
+                autoDetectBadges.classList.add("flex");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        uploadZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadZone.classList.add("drag-over");
+        });
+        uploadZone.addEventListener("dragleave", () => uploadZone.classList.remove("drag-over"));
+        uploadZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove("drag-over");
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event("change"));
+            }
+        });
+
+        function setRisk(v) {
+            document.getElementById("riskInput").value = v;
+        }
+
+        // Load initial data
+        async function loadInitialData() {
+            try {
+                const data = await window.api.getInfo();
+                
+                // Update session info
+                updateSessionCard(data.session);
+                
+                // Update steps
+                const stepsContainer = document.getElementById('stepsContainer');
+                stepsContainer.innerHTML = data.steps.map((step, index) => `
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 rounded shrink-0 flex items-center justify-center font-mono text-xs font-bold mt-0.5"
+                             style="background:rgba(88,166,255,0.1);color:#58a6ff;border:1px solid rgba(88,166,255,0.2);">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">${step.title}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">${step.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update concepts
+                const conceptsContainer = document.getElementById('conceptsContainer');
+                conceptsContainer.innerHTML = data.concepts.map(concept => `
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg"
+                         style="background:rgba(255,255,255,0.02);border:1px solid #21262d;">
+                        <div class="w-1.5 h-1.5 rounded-full" style="background:${concept.color};"></div>
+                        <span class="text-xs text-gray-400">${concept.name}</span>
+                    </div>
+                `).join('');
+                
+                // Load recent analyses
+                await loadRecentAnalyses();
+                
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+        
+        function updateSessionCard(session) {
+            const sessionCard = document.getElementById('sessionCard');
+            const sessionIndicator = document.getElementById('sessionIndicator');
+            const sessionName = document.getElementById('sessionName');
+            const sessionDescription = document.getElementById('sessionDescription');
+            const nyTime = document.getElementById('nyTime');
+            const sessionBadge = document.getElementById('sessionBadge');
+            const sessionBadgeText = document.getElementById('sessionBadgeText');
+            
+            // Update styles
+            if (session.is_killzone) {
+                sessionCard.className = 'rounded-xl p-4 border border-bull';
+                sessionIndicator.className = 'w-1.5 h-1.5 rounded-full animate-pulse bg-bull';
+                sessionName.className = 'font-mono text-sm font-bold text-bull';
+                sessionBadge.innerHTML = '<span class="text-xs font-mono px-2 py-0.5 rounded-full signal-trade mt-1 inline-block">KILLZONE</span>';
+            } else if (session.avoid_trading) {
+                sessionCard.className = 'rounded-xl p-4 border border-bear';
+                sessionIndicator.className = 'w-1.5 h-1.5 rounded-full animate-pulse bg-bear';
+                sessionName.className = 'font-mono text-sm font-bold text-bear';
+                sessionBadge.innerHTML = '<span class="text-xs font-mono px-2 py-0.5 rounded-full signal-no mt-1 inline-block">AVOID</span>';
+            } else {
+                sessionCard.className = 'rounded-xl p-4 border border-terminal-border';
+                sessionIndicator.className = 'w-1.5 h-1.5 rounded-full animate-pulse bg-wait';
+                sessionName.className = 'font-mono text-sm font-bold text-wait';
+                sessionBadge.innerHTML = '';
+            }
+            
+            sessionName.textContent = session.session_name;
+            sessionDescription.textContent = session.session_description;
+            nyTime.textContent = session.ny_time_str;
+            sessionBadgeText.textContent = `✓ Session: ${session.ny_time_str}`;
+        }
+        
+        async function loadRecentAnalyses() {
+            try {
+                const data = await window.api.getHistory();
+                
+                const analysesList = document.getElementById('analysesList');
+                if (data.analyses && data.analyses.length > 0) {
+                    analysesList.innerHTML = data.analyses.slice(0, 5).map(a => `
+                        <a href="/analysis.html?id=${a.id}"
+                           class="analysis-card flex items-center gap-3 px-4 py-3 rounded-xl border border-terminal-border block"
+                           style="background:#111318;">
+                            <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-terminal-border">
+                                <img src="${a.chart_image_url || '/static/placeholder.png'}" class="w-full h-full object-cover" alt="chart"/>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-sm font-bold text-white">${a.pair || 'Unknown'}</span>
+                                    <span class="text-xs text-gray-600">${a.timeframe || ''}</span>
+                                </div>
+                                <span class="text-xs text-gray-600">${new Date(a.created_at).toLocaleDateString()} · ${a.session || ''}</span>
+                            </div>
+                            ${a.signal ? `
+                            <span class="text-xs font-mono px-2 py-1 rounded-md ${a.signal === 'TRADE' ? 'signal-trade' : a.signal === 'WAIT' ? 'signal-wait' : 'signal-no'}">
+                                ${a.signal}
+                            </span>
+                            ` : ''}
+                            ${a.bias ? `
+                            <span class="font-mono text-xs ${a.bias === 'BULLISH' ? 'bias-bull' : a.bias === 'BEARISH' ? 'bias-bear' : 'bias-neutral'}">
+                                ${a.bias === 'BULLISH' ? '▲' : a.bias === 'BEARISH' ? '▼' : '◆'} ${a.bias}
+                            </span>
+                            ` : ''}
+                        </a>
+                    `).join('');
+                } else {
+                    analysesList.innerHTML = '<div class="text-center text-gray-500">No analyses yet. Upload a chart to get started!</div>';
+                }
+            } catch (error) {
+                console.error('Error loading analyses:', error);
+                document.getElementById('analysesList').innerHTML = '<div class="text-center text-gray-500">Error loading analyses</div>';
+            }
+        }
+        
+        // Form submission
+        const loadingMessages = [
+            "Reading chart symbol & timeframe...",
+            "Detecting NY session & killzone...",
+            "Scanning market structure...",
+            "Identifying liquidity pools...",
+            "Locating order blocks & FVGs...",
+            "Checking ICT confluences...",
+            "Calculating entry, SL & targets...",
+            "Generating recommendation...",
+        ];
+        
+        document.getElementById("analysisForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const overlay = document.getElementById("loadingOverlay");
+            const loadingText = document.getElementById("loadingText");
+            const submitBtn = document.getElementById("submitBtn");
+            const btnText = document.getElementById("btnText");
+            const btnLoader = document.getElementById("btnLoader");
+            
+            overlay.classList.remove("hidden");
+            overlay.classList.add("flex");
+            submitBtn.disabled = true;
+            btnText.classList.add("hidden");
+            btnLoader.classList.remove("hidden");
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                loadingText.textContent = loadingMessages[i % loadingMessages.length];
+                i++;
+            }, 2200);
+            
+            try {
+                const data = await window.api.analyze(formData);
+                clearInterval(interval);
+                
+                if (data.success) {
+                    window.location.href = `/analysis.html?id=${data.analysis_id}`;
+                } else {
+                    overlay.classList.add("hidden");
+                    overlay.classList.remove("flex");
+                    submitBtn.disabled = false;
+                    btnText.classList.remove("hidden");
+                    btnLoader.classList.add("hidden");
+                    alert("Error: " + (data.error || "Analysis failed"));
+                }
+            } catch (err) {
+                clearInterval(interval);
+                overlay.classList.add("hidden");
+                overlay.classList.remove("flex");
+                submitBtn.disabled = false;
+                btnText.classList.remove("hidden");
+                btnLoader.classList.add("hidden");
+                alert("Network error: " + err.message);
+            }
+        });
+        
+        // Load initial data on page load
+        loadInitialData();
+    </script>
+</body>
+</html>

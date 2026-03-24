@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">ICT Agent — Analysis Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['Space Mono', 'monospace'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        bull: '#00d4aa',
+                        bear: '#ff4757',
+                        wait: '#ffa502',
+                        accent: '#58a6ff',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Top ticker bar -->
+    <div class="border-b border-terminal-border overflow-hidden" style="background:#0d1117;">
+        <div class="flex items-center py-1.5 overflow-hidden">
+            <span class="font-mono text-xs text-gray-500 px-4 shrink-0 border-r border-terminal-border mr-4">LIVE</span>
+            <div class="ticker-inner flex gap-8 whitespace-nowrap font-mono text-xs">
+                <span class="text-gray-400">EUR/USD <span class="text-bull">+0.12%</span></span>
+                <span class="text-gray-400">GBP/USD <span class="text-bear">-0.08%</span></span>
+                <span class="text-gray-400">XAU/USD <span class="text-bull">+0.45%</span></span>
+                <span class="text-gray-400">BTC/USD <span class="text-bull">+1.23%</span></span>
+                <span class="text-gray-400">GBP/JPY <span class="text-bear">-0.19%</span></span>
+                <span class="text-gray-400">NAS100 <span class="text-bull">+0.67%</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="border-b border-terminal-border sticky top-0 z-50" style="background:rgba(10,12,15,0.95);backdrop-filter:blur(10px);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded flex items-center justify-center" style="background:rgba(88,166,255,0.15);border:1px solid rgba(88,166,255,0.3);">
+                    <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <span class="font-mono text-sm font-bold text-white tracking-wider">ICT<span class="text-accent">AGENT</span></span>
+            </a>
+            <div class="flex items-center gap-1">
+                <a href="/" class="px-3 py-1.5 rounded text-sm text-gray-400 hover:text-white hover:bg-terminal-card transition-colors">Analyze</a>
+                <a href="/history.html" class="px-3 py-1.5 rounded text-sm text-gray-400 hover:text-white hover:bg-terminal-card transition-colors">History</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div id="analysisContent" class="space-y-6">
+            <div class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-accent border-t-transparent"></div>
+                <p class="mt-4 text-gray-500">Loading analysis...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-terminal-border mt-16 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <span class="font-mono text-xs text-gray-600">ICT AGENT v1.0 — Smart Money Analysis</span>
+            <span class="text-xs text-gray-700">For educational purposes only. Not financial advice.</span>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function loadAnalysis() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const analysisId = urlParams.get('id');
+            
+            if (!analysisId) {
+                document.getElementById('analysisContent').innerHTML = `
+                    <div class="rounded-xl border border-terminal-border p-8 text-center" style="background:#111318;">
+                        <div class="text-red-500 mb-4">⚠️ No analysis ID provided</div>
+                        <a href="/" class="text-accent hover:underline">← Back to Home</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const analysis = await window.api.getAnalysis(analysisId);
+                
+                // Update page title
+                document.title = `${analysis.pair || 'Unknown'} ${analysis.timeframe || ''} — ICT Analysis`;
+                
+                // Render the analysis
+                renderAnalysis(analysis);
+                
+            } catch (error) {
+                console.error('Error loading analysis:', error);
+                document.getElementById('analysisContent').innerHTML = `
+                    <div class="rounded-xl border border-terminal-border p-8 text-center" style="background:#111318;">
+                        <div class="text-red-500 mb-4">⚠️ Error loading analysis</div>
+                        <p class="text-gray-500 mb-4">${error.message}</p>
+                        <a href="/" class="text-accent hover:underline">← Back to Home</a>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderAnalysis(analysis) {
+            const content = `
+                <!-- Back + header -->
+                <div class="flex items-center justify-between">
+                    <a href="/" class="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        New Analysis
+                    </a>
+                    <div class="flex items-center gap-2 font-mono text-xs text-gray-600">
+                        <div class="w-1.5 h-1.5 rounded-full bg-bull"></div>
+                        ${new Date(analysis.created_at).toLocaleString()}
+                    </div>
+                </div>
+                
+                ${renderSignalBanner(analysis)}
+                
+                <!-- Main grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <!-- Chart image -->
+                    <div class="lg:col-span-2 rounded-xl border border-terminal-border overflow-hidden" style="background:#111318;">
+                        <div class="px-4 py-3 border-b border-terminal-border flex items-center justify-between">
+                            <span class="font-mono text-xs text-gray-500 uppercase tracking-wider">Chart</span>
+                            <div class="flex items-center gap-3 font-mono text-xs">
+                                <span class="text-gray-500">${analysis.pair || 'Unknown'}</span>
+                                <span class="text-gray-600">/</span>
+                                <span class="text-gray-500">${analysis.timeframe || ''}</span>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <img src="${analysis.chart_image_url}" class="w-full rounded-lg" alt="Chart" style="max-height:420px;object-fit:contain;background:#0a0c0f;"/>
+                        </div>
+                    </div>
+                    
+                    ${renderTradeDetails(analysis)}
+                </div>
+                
+                <!-- Analysis details row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    ${analysis.market_structure ? `
+                    <div class="rounded-xl border border-terminal-border p-5" style="background:#111318;">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
+                            <p class="font-mono text-xs text-gray-500 uppercase tracking-wider">Market Structure</p>
+                        </div>
+                        <p class="text-sm text-gray-300 leading-relaxed">${analysis.market_structure}</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${analysis.key_levels ? `
+                    <div class="rounded-xl border border-terminal-border p-5" style="background:#111318;">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-1.5 h-1.5 rounded-full text-wait" style="background:#ffa502;"></div>
+                            <p class="font-mono text-xs text-gray-500 uppercase tracking-wider">Key Levels & POIs</p>
+                        </div>
+                        <p class="text-sm text-gray-300 leading-relaxed font-mono text-xs">${analysis.key_levels}</p>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Full Analysis Narrative -->
+                ${analysis.full_analysis ? `
+                <div class="rounded-xl border border-terminal-border p-6" style="background:#111318;">
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <p class="font-mono text-xs text-gray-500 uppercase tracking-wider">Full ICT Analysis</p>
+                    </div>
+                    <div class="text-sm text-gray-300 leading-7 whitespace-pre-wrap">${analysis.full_analysis}</div>
+                </div>
+                ` : ''}
+                
+                <!-- Disclaimer + actions -->
+                <div class="flex items-center justify-between pt-2 border-t border-terminal-border">
+                    <p class="text-xs text-gray-700">This is AI analysis for educational purposes only — not financial advice. Always do your own research.</p>
+                    <div class="flex items-center gap-2">
+                        <a href="/" class="px-4 py-2 text-sm rounded-lg border border-terminal-border text-gray-400 hover:text-white hover:border-gray-600 transition-colors font-mono">
+                            + New Analysis
+                        </a>
+                        <button onclick="deleteAnalysis('${analysis.id}')" class="px-4 py-2 text-sm rounded-lg text-gray-600 hover:text-bear transition-colors font-mono">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('analysisContent').innerHTML = content;
+        }
+        
+        function renderSignalBanner(analysis) {
+            if (analysis.signal === 'TRADE') {
+                return `
+                <div class="rounded-xl p-5 relative overflow-hidden" style="background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.25);">
+                    <div class="absolute top-0 left-0 w-1 h-full rounded-l-xl" style="background:#00d4aa;"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3 ml-2">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:rgba(0,212,170,0.15);">
+                                <svg class="w-5 h-5 text-bull" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-lg font-bold text-bull">TRADE SETUP</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:rgba(0,212,170,0.1);color:#00d4aa;border:1px solid rgba(0,212,170,0.3);">
+                                        ${analysis.bias === 'BULLISH' ? '▲ BULLISH' : '▼ BEARISH'}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-0.5">${analysis.pair} — ${analysis.timeframe} — ${analysis.session || ''}</p>
+                            </div>
+                        </div>
+                        ${analysis.rr_ratio ? `
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500 font-mono">RISK:REWARD</p>
+                            <p class="font-mono text-2xl font-bold text-bull">${analysis.rr_ratio}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>`;
+            } else if (analysis.signal === 'WAIT') {
+                return `
+                <div class="rounded-xl p-5 relative overflow-hidden" style="background:rgba(255,165,2,0.07);border:1px solid rgba(255,165,2,0.25);">
+                    <div class="absolute top-0 left-0 w-1 h-full rounded-l-xl" style="background:#ffa502;"></div>
+                    <div class="flex items-center gap-3 ml-2">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:rgba(255,165,2,0.15);">
+                            <svg class="w-5 h-5 text-wait" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <span class="font-mono text-lg font-bold text-wait">WAIT & WATCH</span>
+                            <p class="text-sm text-gray-400 mt-0.5">${analysis.pair} — ${analysis.timeframe} — Setup not yet ready</p>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                return `
+                <div class="rounded-xl p-5 relative overflow-hidden" style="background:rgba(255,71,87,0.07);border:1px solid rgba(255,71,87,0.25);">
+                    <div class="absolute top-0 left-0 w-1 h-full rounded-l-xl" style="background:#ff4757;"></div>
+                    <div class="flex items-center gap-3 ml-2">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:rgba(255,71,87,0.15);">
+                            <svg class="w-5 h-5 text-bear" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        </div>
+                        <div>
+                            <span class="font-mono text-lg font-bold text-bear">NO TRADE</span>
+                            <p class="text-sm text-gray-400 mt-0.5">${analysis.pair} — ${analysis.timeframe} — No valid setup today</p>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }
+        
+        function renderTradeDetails(analysis) {
+            if (analysis.signal === 'TRADE') {
+                return `
+                <div class="space-y-3">
+                    ${analysis.entry_price ? `
+                    <div class="rounded-xl border p-4" style="background:rgba(88,166,255,0.05);border-color:rgba(88,166,255,0.2);">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Entry Zone</p>
+                        <p class="font-mono text-xl font-bold text-accent">${analysis.entry_price}</p>
+                    </div>
+                    ` : ''}
+                    ${analysis.stoploss ? `
+                    <div class="rounded-xl border p-4" style="background:rgba(255,71,87,0.05);border-color:rgba(255,71,87,0.2);">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Stop Loss</p>
+                        <p class="font-mono text-xl font-bold text-bear">${analysis.stoploss}</p>
+                    </div>
+                    ` : ''}
+                    ${analysis.tp1 ? `
+                    <div class="rounded-xl border p-4" style="background:rgba(0,212,170,0.05);border-color:rgba(0,212,170,0.2);">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Target 1</p>
+                        <p class="font-mono text-xl font-bold text-bull">${analysis.tp1}</p>
+                    </div>
+                    ` : ''}
+                    ${analysis.tp2 ? `
+                    <div class="rounded-xl border p-4" style="background:rgba(0,212,170,0.05);border-color:rgba(0,212,170,0.15);">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">Target 2</p>
+                        <p class="font-mono text-xl font-bold" style="color:rgba(0,212,170,0.7);">${analysis.tp2}</p>
+                    </div>
+                    ` : ''}
+                    ${analysis.rr_ratio ? `
+                    <div class="rounded-xl border border-terminal-border p-4" style="background:#111318;">
+                        <p class="text-xs font-mono text-gray-500 uppercase tracking-wider mb-1">R:R Ratio</p>
+                        <p class="font-mono text-xl font-bold text-white">${analysis.rr_ratio}</p>
+                        <p class="text-xs text-gray-600 mt-1">at ${analysis.risk_percent || 1.0}% risk</p>
+                    </div>
+                    ` : ''}
+                </div>`;
+            } else if (analysis.signal === 'WAIT') {
+                return `
+                <div class="rounded-xl border p-5" style="background:rgba(255,165,2,0.04);border-color:rgba(255,165,2,0.2);">
+                    <p class="font-mono text-xs text-wait uppercase tracking-wider mb-3">Wait For These Conditions</p>
+                    <p class="text-sm text-gray-300 leading-relaxed">${analysis.wait_condition || 'No specific conditions provided.'}</p>
+                </div>`;
+            } else {
+                return `
+                <div class="rounded-xl border p-5" style="background:rgba(255,71,87,0.04);border-color:rgba(255,71,87,0.2);">
+                    <p class="font-mono text-xs text-bear uppercase tracking-wider mb-3">Why No Trade Today</p>
+                    <p class="text-sm text-gray-300 leading-relaxed">${analysis.no_trade_reason || 'No specific reason provided.'}</p>
+                </div>`;
+            }
+        }
+        
+        async function deleteAnalysis(analysisId) {
+            if (!confirm('Delete this analysis? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                await window.api.deleteAnalysis(analysisId);
+                window.location.href = '/history.html';
+            } catch (error) {
+                console.error('Error deleting analysis:', error);
+                alert('Error deleting analysis: ' + error.message);
+            }
+        }
+        
+        // Load analysis on page load
+        loadAnalysis();
+    </script>
+</body>
+</html>
